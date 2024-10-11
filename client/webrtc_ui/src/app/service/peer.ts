@@ -1,23 +1,17 @@
 class Peerservice {
-  peer: RTCPeerConnection;
-  constructor() {
-    if (!this.peer)
-      this.peer = new RTCPeerConnection(
-        {
-          iceServers: [
-            {
-              urls: ["stun:stun.l.google.com:19302",
-                "stun:global.stun.twilio.com:3478"
-              ], // Google STUN server
-            },
-          ],
-        }
-      );
-  }
+  peer: RTCPeerConnection = new RTCPeerConnection({
+    iceServers: [
+      {
+        urls: [
+          "stun:stun.l.google.com:19302",
+          "stun:global.stun.twilio.com:3478",
+        ], // Google STUN server
+      },
+    ],
+  });
 
   async getOffer() {
     if (this.peer) {
-
       const offer = await this.peer.createOffer();
       if (!offer || !offer.type || !offer.sdp) {
         console.error("Invalid offer received:", offer);
@@ -45,9 +39,7 @@ class Peerservice {
       await this.peer.setRemoteDescription(answer);
     }
   }
-
 }
-
 
 const peerServiceInstance = new Peerservice();
 export default peerServiceInstance;
