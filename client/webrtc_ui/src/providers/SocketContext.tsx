@@ -4,15 +4,15 @@ import { createContext, ReactNode, useContext, useMemo } from "react";
 import io from "socket.io-client";
 
 // Define the context type
-// interface SocketContextType {
-//   socket: SocketIOClient.Socket;
-// }
+interface SocketContextType {
+  socket: SocketIOClient.Socket;
+}
 
 // Create the socket context
-export const socketContext = createContext<any>(null);
+export const socketContext = createContext<SocketContextType | null>(null);
 
 export const useSocket = () => {
-  const socket = useContext(socketContext);
+  const socket = useContext(socketContext) as SocketContextType;
   return socket.socket;
 };
 
