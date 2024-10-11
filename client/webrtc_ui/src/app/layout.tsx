@@ -4,7 +4,6 @@ import { SocketDataProvider } from "@/providers/SocketContext";
 // import type { Metadata } from "next";
 // import localFont from "next/font/local";
 import "./globals.css";
-import { WebRtcContext_Peer_provider } from "@/providers/WebRtcContext_Peer";
 
 // const geistSans = localFont({
 //   src: "./fonts/GeistVF.woff",
@@ -30,9 +29,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        <WebRtcContext_Peer_provider>
-          <SocketDataProvider>{children}</SocketDataProvider>
-        </WebRtcContext_Peer_provider>
+        <SocketDataProvider>{children}</SocketDataProvider>
       </body>
     </html>
   );

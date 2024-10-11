@@ -1,7 +1,7 @@
 "use client";
 import { useRouter } from "next/navigation";
 
-import { useCallback, useContext, useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -12,39 +12,39 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { socketContext } from "@/providers/SocketContext";
+import { useSocket } from "@/providers/SocketContext";
 
 export default function Page() {
   const [email, setEmail] = useState("");
   const [roomNumber, setRoomNumber] = useState("");
 
-  const { socket, connectSocket } = useContext(socketContext);
+  const socket = useSocket();
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    // Handle the join room logic here
-    console.log("Joining room:", { email, roomNumber });
-    socket.emit("join-room", { emailId: email, roomId: roomNumber });
-  };
+  const handleSubmit = useCallback(
+    (e: React.FormEvent) => {
+      e.preventDefault();
+      alert("form submiitt");
+      // Handle the join room logic here
+      console.log("Joining room:", { email, roomNumber });
+      socket.emit("room:join", { emailId: email, roomId: roomNumber });
+    },
+    [email, roomNumber, socket]
+  );
 
   const router = useRouter();
 
   const handleJoinRoom = useCallback(
     ({ roomId }: { roomId: number }) => {
+      alert("call for join room");
       router.push(`/room/${roomId}`);
     },
     [router]
   );
 
   useEffect(() => {
-    connectSocket();
-  }, [connectSocket]);
-
-
-  useEffect(() => {
-    socket?.on("joined-room", handleJoinRoom);
+    socket.on("room:join", handleJoinRoom);
     return () => {
-      socket?.off("joined-room", handleJoinRoom);
+      socket?.off("room:join", handleJoinRoom);
     };
   }, [socket, handleJoinRoom]);
 
@@ -81,9 +81,7 @@ export default function Page() {
                 required
               />
             </div>
-            <Button type="submit" className="w-full">
-              Join
-            </Button>
+            <Button onClick={handleSubmit}>Join</Button>
           </form>
         </CardContent>
       </Card>
