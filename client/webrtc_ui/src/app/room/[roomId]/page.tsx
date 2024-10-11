@@ -102,7 +102,7 @@ function Page({ params }: { params: { roomId: number } }) {
     };
   }, [handleCallAccepted, handleIncomingCall, handleNewUserJoined, socket]); // Dependencies
 
-  const handleGetRemoteDataStream = useCallback((event: any) => {
+  const handleGetRemoteDataStream = useCallback((event: RTCTrackEvent) => {
     const remotestream = event.streams[0];
     setremotemyMediaStream(remotestream);
   }, []);
