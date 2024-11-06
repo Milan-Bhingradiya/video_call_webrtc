@@ -1,1 +1,1 @@
-web: npm run build && npm start
+web: npm audit fix && npm run build  && npm start
