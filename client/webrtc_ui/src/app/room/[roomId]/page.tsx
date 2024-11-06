@@ -1,10 +1,22 @@
 "use client";
 import peerServiceInstance from "@/app/service/peer";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 import { useSocket } from "@/providers/SocketContext";
+import { Mic, MicOff, Phone, PhoneOff, Video, VideoOff } from "lucide-react";
 import React, { useCallback, useEffect, useState } from "react";
 import ReactPlayer from "react-player";
 
 function Page({ params }: { params: { roomId: number } }) {
+  // 00000000000000000000
+  const [isCalling, setIsCalling] = useState(false);
+  const [isMuted, setIsMuted] = useState(false);
+  const [isVideoOff, setIsVideoOff] = useState(false);
+  const handleCallToggle = () => {
+    setIsCalling(!isCalling);
+    // Here you would handle the actual call logic
+  };
+  // 00000000000000000000
   const [myMediaStream, setmyMediaStream] = useState<MediaStream | null>(null);
   const [remoteMediaStream, setremotemyMediaStream] =
     useState<MediaStream | null>(null);
@@ -67,6 +79,11 @@ function Page({ params }: { params: { roomId: number } }) {
     [myMediaStream]
   );
 
+  const handleNegoNeeded = useCallback(async () => {
+    const offer = await peerServiceInstance.getOffer();
+    socket.emit("peer:nego:needed", { offer, to: remoteSocketId });
+  }, [remoteSocketId, socket]);
+
   const handleNegotiationIncoming = useCallback(
     async (data: { from: string; offer: RTCSessionDescriptionInit }) => {
       console.log("Negotiation needed from ", data.from);
@@ -85,6 +102,19 @@ function Page({ params }: { params: { roomId: number } }) {
     []
   );
 
+  useEffect(() => {
+    peerServiceInstance.peer.addEventListener(
+      "negotiationneeded",
+      handleNegoNeeded
+    );
+    return () => {
+      peerServiceInstance.peer.removeEventListener(
+        "negotiationneeded",
+        handleNegoNeeded
+      );
+    };
+  }, [handleNegoNeeded]);
+
   // Listen for 'user-joined' event and handle it
   useEffect(() => {
     socket?.on("user:joined", handleNewUserJoined);
@@ -100,7 +130,14 @@ function Page({ params }: { params: { roomId: number } }) {
       socket.off("peer:nego:needed", handleNegotiationIncoming);
       socket.off("peer:nego:final", handleNegotiationFinal);
     };
-  }, [handleCallAccepted, handleIncomingCall, handleNewUserJoined, socket]); // Dependencies
+  }, [
+    handleCallAccepted,
+    handleIncomingCall,
+    handleNegotiationFinal,
+    handleNegotiationIncoming,
+    handleNewUserJoined,
+    socket,
+  ]); // Dependencies
 
   const handleGetRemoteDataStream = useCallback((event: RTCTrackEvent) => {
     const remotestream = event.streams[0];
@@ -140,9 +177,7 @@ function Page({ params }: { params: { roomId: number } }) {
 
   return (
     <div>
-      <h1>You are in room number {params.roomId}</h1>
-      <h4>{remoteSocketId ? "Connected" : "No one in room"}</h4>
-      {remoteSocketId && (
+      {/* {remoteSocketId && (
         <button
           onClick={() => {
             handleCallUser();
@@ -153,7 +188,103 @@ function Page({ params }: { params: { roomId: number } }) {
       )}
 
       {myMediaStream && <ReactPlayer url={myMediaStream} playing />}
-      {remoteMediaStream && <ReactPlayer url={remoteMediaStream} playing />}
+      {remoteMediaStream && <ReactPlayer url={remoteMediaStream} playing />} */}
+
+      {/* 00000000000000000000 */}
+
+      <div className="min-h-screen bg-gray-900 text-white p-4">
+        <h1>You are in room number {params.roomId}</h1>
+        <h4>{remoteSocketId ? "Connected" : "No one in room"}</h4>
+        <div className="max-w-4xl mx-auto">
+          <div className="flex flex-row flex-wrap gap-4 mb-4">
+            <Card className="bg-gray-800 border-gray-700 overflow-hidden">
+              <CardContent className="p-0 h-[230px] w-[250px] md:h-[400px] md:w-[420px] ">
+                {myMediaStream && (
+                  <ReactPlayer
+                    width="100%" // Ensures the player takes up the full width of the card
+                    height="100%" // Ensures the player takes up the full height of the card
+                    style={{ objectFit: "cover" }} // Ensures the content scales and fits well
+                    url={myMediaStream}
+                    playing
+                  />
+                )}
+              </CardContent>
+            </Card>
+            <Card className="bg-gray-800 border-gray-700 overflow-hidden">
+              <CardContent className="p-0  h-[230px] w-[250px] md:h-[400px] md:w-[420px]">
+                {remoteMediaStream && (
+                  <ReactPlayer
+                    width="100%" // Ensures the player takes up the full width of the card
+                    height="100%" // Ensures the player takes up the full height of the card
+                    style={{ objectFit: "cover" }} // Ensures the content scales and fits well
+                    url={remoteMediaStream}
+                    playing
+                  />
+                )}
+              </CardContent>
+            </Card>
+          </div>
+
+          <button
+            onClick={() => {
+              handleCallUser();
+            }}
+            className="bg-green-600 hover:bg-green-700 text-white px-8 py-3 rounded-full text-lg"
+          >
+            Make Call
+          </button>
+          <div className="flex justify-center space-x-4">
+            <Button
+              onClick={() => setIsMuted(!isMuted)}
+              variant="outline"
+              size="icon"
+              className={`rounded-full ${
+                isMuted
+                  ? "bg-red-600 hover:bg-red-700"
+                  : "bg-gray-700 hover:bg-gray-600"
+              }`}
+            >
+              {isMuted ? (
+                <MicOff className="h-6 w-6" />
+              ) : (
+                <Mic className="h-6 w-6" />
+              )}
+            </Button>
+            <Button
+              onClick={handleCallToggle}
+              variant="outline"
+              size="icon"
+              className={`rounded-full ${
+                isCalling
+                  ? "bg-red-600 hover:bg-red-700"
+                  : "bg-green-600 hover:bg-green-700"
+              }`}
+            >
+              {isCalling ? (
+                <PhoneOff className="h-6 w-6" />
+              ) : (
+                <Phone className="h-6 w-6" />
+              )}
+            </Button>
+            <Button
+              onClick={() => setIsVideoOff(!isVideoOff)}
+              variant="outline"
+              size="icon"
+              className={`rounded-full ${
+                isVideoOff
+                  ? "bg-red-600 hover:bg-red-700"
+                  : "bg-gray-700 hover:bg-gray-600"
+              }`}
+            >
+              {isVideoOff ? (
+                <VideoOff className="h-6 w-6" />
+              ) : (
+                <Video className="h-6 w-6" />
+              )}
+            </Button>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

@@ -1,0 +1,8 @@
+{
+  "name": "playaptitude",
+  "version": "1.0.0",
+  "main": "server/index.js",
+  "scripts": {
+    "start": "cd server && npm install && npm run build && node dist/server.js"
+  }
+}
