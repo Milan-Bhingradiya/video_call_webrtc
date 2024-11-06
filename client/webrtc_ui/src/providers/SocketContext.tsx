@@ -22,7 +22,10 @@ interface Props {
 
 export const SocketDataProvider = ({ children }: Props) => {
   const socket = useMemo(() => {
-    return io.connect("https://videocallwebrtc-production.up.railway.app");
+    // return io.connect("https://videocallwebrtc-production.up.railway.app");
+    return io.connect(
+      "https://webrtc-roomvideo-app-48c8cc957d67.herokuapp.com/"
+    );
   }, []);
 
   return (
