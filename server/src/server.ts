@@ -4,6 +4,7 @@ import { Server } from "socket.io";
 
 const app = express();
 
+app.use(express.json());
 // // Create HTTP server
 const httpServer = createServer(app);
 
@@ -16,7 +17,6 @@ const io = new Server(httpServer, {
 });
 
 // Middleware to serve static files or handle JSON
-app.use(express.json());
 
 app.get("/", (req, res) => {
   console.log("smm");
