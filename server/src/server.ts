@@ -1,14 +1,17 @@
 import express from "express";
 import http, { createServer } from "http";
 import { Server } from "socket.io";
-
+import cors from "cors";
 const app = express();
 
 app.use(express.json());
-// // Create HTTP server
+
+app.use(express.urlencoded({ limit: "10mb", extended: true }));
+
+app.use(cors());
+
 const httpServer = createServer(app);
 
-// Initialize Socket.IO
 const io = new Server(httpServer, {
   cors: {
     origin: "*",
@@ -28,7 +31,7 @@ app.get("/", (req, res) => {
 const email_to_socket = new Map();
 const socket_to_email = new Map();
 
-// Handle Socket.IO connections 
+// Handle Socket.IO connections
 io.on("connection", (socket) => {
   console.log("A user connected:", socket.id);
   // when any user join roome this call
