@@ -25,16 +25,31 @@ function Page({ params }: { params: { roomId: number } }) {
   // Define socket and WebRTC variables
   const socket = useSocket();
 
-  const handleCallUser = useCallback(async () => {
+  const addStreamToPeer = useCallback(async () => {
     const stream = await navigator.mediaDevices.getUserMedia({
       audio: true,
       video: true,
     });
+    setmyMediaStream(stream);
 
+    for (const track of stream!.getTracks()) {
+      peerServiceInstance.peer.addTrack(track, stream!);
+    }
+
+    // console.log("cLLLLLL 0", remoteSocketId);
+    // if (tru) {
+    //   console.log("cLLLLLL", remoteSocketId);
+    //   const offer = await peerServiceInstance.getOffer();
+    //   socket.emit("call:user", { to: remoteSocketId, offer });
+    // }
+  }, []);
+
+  const handleCallUser = useCallback(async () => {
     // make my offer and send to reciver with reciver socketid
+
+    // await addStreamToPeer();
     const offer = await peerServiceInstance.getOffer();
     socket.emit("call:user", { to: remoteSocketId, offer: offer });
-    setmyMediaStream(stream);
   }, [remoteSocketId, socket]);
 
   // Handle a new user joining the room
@@ -51,14 +66,16 @@ function Page({ params }: { params: { roomId: number } }) {
       console.log("incoming call from ", data.from, "offer : ", data);
       setremoteSocketId(data.from);
 
-      // kok no call ave etle apdo camero start....
-
       const stream = await navigator.mediaDevices.getUserMedia({
         audio: true,
         video: true,
       });
 
       setmyMediaStream(stream);
+
+      for (const track of stream!.getTracks()) {
+        peerServiceInstance.peer.addTrack(track, stream!);
+      }
 
       const answer = await peerServiceInstance.getAnswer(data.offer);
       socket.emit("call:accepted", { to: data.from, answer: answer });
@@ -70,13 +87,9 @@ function Page({ params }: { params: { roomId: number } }) {
     async (data: { from: string; answer: RTCSessionDescriptionInit }) => {
       peerServiceInstance.setlocalDescription(data.answer);
       console.log("call accepted from ", data.from);
-
-      // this mystram to another user...
-      for (const track of myMediaStream!.getTracks()) {
-        peerServiceInstance.peer.addTrack(track, myMediaStream!);
-      }
+      setremoteSocketId(data.from);
     },
-    [myMediaStream]
+    []
   );
 
   const handleNegoNeeded = useCallback(async () => {
@@ -113,7 +126,7 @@ function Page({ params }: { params: { roomId: number } }) {
         handleNegoNeeded
       );
     };
-  }, [handleNegoNeeded]);
+  }, []);
 
   // Listen for 'user-joined' event and handle it
   useEffect(() => {
@@ -141,6 +154,7 @@ function Page({ params }: { params: { roomId: number } }) {
 
   const handleGetRemoteDataStream = useCallback((event: RTCTrackEvent) => {
     const remotestream = event.streams[0];
+    console.log("remote stream", remotestream);
     setremotemyMediaStream(remotestream);
   }, []);
   useEffect(() => {
@@ -225,6 +239,14 @@ function Page({ params }: { params: { roomId: number } }) {
             </Card>
           </div>
 
+          <button
+            onClick={() => {
+              addStreamToPeer();
+            }}
+            className="bg-green-600 hover:bg-green-700 text-white px-8 py-3 rounded-full text-lg"
+          >
+            add video
+          </button>
           <button
             onClick={() => {
               handleCallUser();

@@ -17,7 +17,7 @@ class Peerservice {
         console.error("Invalid offer received:", offer);
         throw new Error("Invalid offer");
       }
-      await this.peer.setLocalDescription(offer);
+      await this.peer.setLocalDescription(new RTCSessionDescription(offer));
       return offer;
     }
   }
@@ -26,7 +26,7 @@ class Peerservice {
     if (this.peer) {
       await this.peer.setRemoteDescription(offer);
       const answer = await this.peer.createAnswer();
-      await this.peer.setLocalDescription(answer);
+      await this.peer.setLocalDescription(new RTCSessionDescription(answer));
       return answer;
     }
   }
@@ -36,7 +36,7 @@ class Peerservice {
       if (!answer || !answer.type || !answer.sdp) {
         throw new Error("Invalid answer");
       }
-      await this.peer.setRemoteDescription(answer);
+      await this.peer.setRemoteDescription(new RTCSessionDescription(answer));
     }
   }
 }
