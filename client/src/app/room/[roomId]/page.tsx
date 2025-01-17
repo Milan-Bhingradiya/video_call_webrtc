@@ -8,7 +8,7 @@ import React, { useCallback, useEffect, useState } from "react";
 import ReactPlayer from "react-player";
 
 function Page({ params }: { params: { roomId: number } }) {
-  const [isCalling, setIsCalling] = useState(false);
+  const [isCalling] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
   const [isVideoOff, setIsVideoOff] = useState(false); // Controls video state (on/off)
   const [myMediaStream, setmyMediaStream] = useState<MediaStream | null>(null);
